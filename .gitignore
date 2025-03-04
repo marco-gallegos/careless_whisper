@@ -1,0 +1,5 @@
+*.ignore.*
+
+*.sqlite*
+
+*__pycache__*
