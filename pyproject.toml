@@ -4,6 +4,9 @@ version = "1.0.0"
 description = "FastAPI service for audio transcription using OpenAI Whisper"
 readme = "readme.md"
 requires-python = ">=3.10"
+
+
+
 dependencies = [
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.32.0",

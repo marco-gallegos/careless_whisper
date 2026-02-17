@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+# -*- coding: latin-1 -*-
 """
 FastAPI application for audio transcription using OpenAI Whisper (local model).
 
@@ -62,10 +64,11 @@ def get_whisper_model(model_name: str = "base"):
     
     Available models: tiny, base, small, medium, large
     """
-    if model_name not in _model_cache:
-        print(f"Loading Whisper model: {model_name}")
-        _model_cache[model_name] = whisper.load_model(model_name)
-    return _model_cache[model_name]
+    # if model_name not in _model_cache:
+    #     print(f"Loading Whisper model: {model_name}")
+    #     _model_cache[model_name] = whisper.load_model(model_name)
+    # return _model_cache[model_name]
+    return whisper.load_model(model_name)
 
 
 def transcribe_audio_sync(file_path: str, model_name: str = "base") -> dict:
@@ -89,6 +92,7 @@ async def transcribe_audio_async(file_path: str, model_name: str = "base") -> di
         file_path,
         model_name
     )
+    
     return result
 
 
@@ -143,13 +147,14 @@ async def health_check():
 async def list_models():
     """List available Whisper models."""
     return {
-        "available_models": ["tiny", "base", "small", "medium", "large"],
+        "available_models": ["tiny", "base", "small", "medium", "large", "turbo"],
         "description": {
             "tiny": "Fastest, lowest accuracy (~1GB)",
             "base": "Fast, good for most uses (~1GB)",
             "small": "Balanced speed/accuracy (~2GB)",
             "medium": "High accuracy, slower (~5GB)",
-            "large": "Highest accuracy, slowest (~10GB)"
+            "large": "Highest accuracy, slowest (~10GB)",
+            "turbo": ""
         },
         "default": "base"
     }
@@ -196,7 +201,7 @@ async def transcribe(
     
     try:
         # Validate model
-        valid_models = ["tiny", "base", "small", "medium", "large"]
+        valid_models = ["tiny", "base", "small", "medium", "large", "turbo"]
         if model not in valid_models:
             raise HTTPException(
                 status_code=400,
@@ -299,8 +304,8 @@ if __name__ == "__main__":
     uvicorn.run(
         app,
         host="0.0.0.0",
-        port=8000,
-        timeout_keep_alive=300,  # 5 minutes keep-alive
+        port=6666,
+        timeout_keep_alive=900,  # 15 minutes keep-alive
         timeout_graceful_shutdown=30,
         log_level="info"
     )
