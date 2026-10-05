@@ -50,3 +50,11 @@ logs: ## Show recent stdout and stderr logs
 logs-clear: ## Clear log files
 	@> $(STDOUT_LOG) 2>/dev/null; > $(STDERR_LOG) 2>/dev/null || true
 	@echo "Logs cleared"
+
+.PHONY: migrate migration
+
+migrate: ## Apply database migrations
+	uv run alembic upgrade head
+
+migration: ## Create a migration: make migration m="message"
+	uv run alembic revision --autogenerate -m "$(m)"

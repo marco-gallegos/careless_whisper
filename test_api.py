@@ -11,7 +11,7 @@ import httpx
 
 async def test_api():
     """Test the API endpoints"""
-    base_url = "http://localhost:8000"
+    base_url = "http://localhost:8765"
     
     print("🧪 Testing Whisper Transcription API\n")
     

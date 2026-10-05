@@ -45,10 +45,10 @@ brew install ffmpeg  # macOS
 python api.py
 
 # Opción 3: Con uvicorn
-uvicorn api:app --host 0.0.0.0 --port 8000 --timeout-keep-alive 300
+uvicorn api:app --host 0.0.0.0 --port 8765 --timeout-keep-alive 300
 ```
 
-Servidor disponible en: **http://localhost:8000**
+Servidor disponible en: **http://localhost:8765**
 
 ## 📡 Uso de la API
 
@@ -56,19 +56,19 @@ Servidor disponible en: **http://localhost:8000**
 
 ```bash
 # Transcripción completa
-curl -X POST "http://localhost:8000/transcribe?model=base" \
+curl -X POST "http://localhost:8765/transcribe?model=base" \
      -F "file=@audio.mp3" \
      -H "accept: application/json"
 
 # Solo texto (más rápido)
-curl -X POST "http://localhost:8000/transcribe-text-only?model=base" \
+curl -X POST "http://localhost:8765/transcribe-text-only?model=base" \
      -F "file=@audio.mp3"
 
 # Con diferentes modelos
-curl -X POST "http://localhost:8000/transcribe?model=tiny" \
+curl -X POST "http://localhost:8765/transcribe?model=tiny" \
      -F "file=@audio.mp3"  # Rápido
 
-curl -X POST "http://localhost:8000/transcribe?model=large" \
+curl -X POST "http://localhost:8765/transcribe?model=large" \
      -F "file=@audio.mp3"  # Preciso
 ```
 
@@ -80,7 +80,7 @@ async function transcribirAudio(archivo) {
     const formData = new FormData();
     formData.append('file', archivo);
     
-    const respuesta = await fetch('http://localhost:8000/transcribe?model=base', {
+    const respuesta = await fetch('http://localhost:8765/transcribe?model=base', {
         method: 'POST',
         body: formData
     });
@@ -103,7 +103,7 @@ document.getElementById('audioInput').addEventListener('change', async (e) => {
 import requests
 
 def transcribir(ruta_audio: str, modelo: str = "base"):
-    url = f"http://localhost:8000/transcribe?model={modelo}"
+    url = f"http://localhost:8765/transcribe?model={modelo}"
     
     with open(ruta_audio, 'rb') as f:
         files = {'file': f}
@@ -128,12 +128,12 @@ Abre el archivo `test_client.html` en tu navegador para una interface gráfica c
 
 ### GET `/` - Información de la API
 ```bash
-curl http://localhost:8000/
+curl http://localhost:8765/
 ```
 
 ### GET `/health` - Estado del servicio
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:8765/health
 ```
 Respuesta:
 ```json
@@ -146,7 +146,7 @@ Respuesta:
 
 ### GET `/models` - Modelos disponibles
 ```bash
-curl http://localhost:8000/models
+curl http://localhost:8765/models
 ```
 
 ### POST `/transcribe` - Transcripción completa
@@ -342,7 +342,7 @@ ffmpeg -version
 ### Error: "Cannot connect to API"
 ```bash
 # Verificar si el servidor está corriendo
-curl http://localhost:8000/health
+curl http://localhost:8765/health
 
 # Si no está corriendo, iniciarlo
 python api.py
@@ -357,7 +357,7 @@ El archivo es muy grande. Opciones:
 ### Error: Out of Memory
 ```bash
 # Usar modelo más pequeño
-curl -X POST "http://localhost:8000/transcribe?model=tiny" -F "file=@audio.mp3"
+curl -X POST "http://localhost:8765/transcribe?model=tiny" -F "file=@audio.mp3"
 
 # Cerrar otras aplicaciones
 # Considerar usar swap/memoria virtual
@@ -474,7 +474,7 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8765"]
 ```
 
 ### Usando systemd (Linux)
@@ -504,8 +504,8 @@ WantedBy=multi-user.target
 
 ### Documentación Interactiva
 Una vez iniciado el servidor:
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+- Swagger UI: http://localhost:8765/docs
+- ReDoc: http://localhost:8765/redoc
 
 ## 🎯 Próximos Pasos
 

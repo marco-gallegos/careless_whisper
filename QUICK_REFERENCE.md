@@ -9,10 +9,10 @@
 ## Test
 ```bash
 # Health check
-curl http://localhost:8000/health
+curl http://localhost:8765/health
 
 # Transcribe
-curl -X POST "http://localhost:8000/transcribe?model=base" \
+curl -X POST "http://localhost:8765/transcribe?model=base" \
      -F "file=@audio.mp3"
 
 # Or use web UI
@@ -24,7 +24,7 @@ open test_client.html
 const formData = new FormData();
 formData.append('file', audioFile);
 
-const response = await fetch('http://localhost:8000/transcribe', {
+const response = await fetch('http://localhost:8765/transcribe', {
     method: 'POST',
     body: formData
 });
@@ -39,7 +39,7 @@ import requests
 
 with open("audio.mp3", "rb") as f:
     response = requests.post(
-        "http://localhost:8000/transcribe",
+        "http://localhost:8765/transcribe",
         files={"file": f}
     )
 
@@ -79,7 +79,7 @@ uv venv && source .venv/bin/activate
 uv pip install -r requirements.txt
 
 # Check server
-curl http://localhost:8000/health
+curl http://localhost:8765/health
 ```
 
 ---

@@ -39,20 +39,20 @@ python api.py
 
 ### Option 3: With uvicorn
 ```bash
-uvicorn api:app --host 0.0.0.0 --port 8000 --timeout-keep-alive 300
+uvicorn api:app --host 0.0.0.0 --port 8765 --timeout-keep-alive 300
 ```
 
-The API will be available at http://localhost:8000
+The API will be available at http://localhost:8765
 
 ## 📝 Quick Test
 
 ### Using curl
 ```bash
 # Health check
-curl http://localhost:8000/health
+curl http://localhost:8765/health
 
 # Transcribe an audio file
-curl -X POST "http://localhost:8000/transcribe?model=base" \
+curl -X POST "http://localhost:8765/transcribe?model=base" \
      -F "file=@your_audio.mp3"
 ```
 

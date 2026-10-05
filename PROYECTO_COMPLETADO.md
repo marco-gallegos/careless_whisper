@@ -64,7 +64,7 @@ python api.py
 
 ### Uso con curl
 ```bash
-curl -X POST "http://localhost:8000/transcribe?model=base" \
+curl -X POST "http://localhost:8765/transcribe?model=base" \
      -F "file=@audio.mp3"
 ```
 
@@ -73,7 +73,7 @@ curl -X POST "http://localhost:8000/transcribe?model=base" \
 const formData = new FormData();
 formData.append('file', audioFile);
 
-const response = await fetch('http://localhost:8000/transcribe?model=base', {
+const response = await fetch('http://localhost:8765/transcribe?model=base', {
     method: 'POST',
     body: formData
 });
@@ -167,7 +167,7 @@ open test_client.html
 
 - **`readme.md`** - Documentación completa y detallada
 - **`QUICKSTART.md`** - Guía de inicio rápido
-- **http://localhost:8000/docs** - Documentación interactiva de la API
+- **http://localhost:8765/docs** - Documentación interactiva de la API
 
 ## 🎨 Interface Web
 
@@ -221,7 +221,7 @@ Si tienes problemas:
 1. Revisa `QUICKSTART.md`
 2. Revisa la sección Troubleshooting en `readme.md`
 3. Verifica que FFmpeg esté instalado: `ffmpeg -version`
-4. Verifica que el servidor esté corriendo: `curl http://localhost:8000/health`
+4. Verifica que el servidor esté corriendo: `curl http://localhost:8765/health`
 
 ---
 

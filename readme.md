@@ -68,38 +68,63 @@ uv run python api.py
 python api.py
 
 # Or with uvicorn
-uvicorn api:app --host 0.0.0.0 --port 8000 --timeout-keep-alive 300
+uvicorn api:app --host 0.0.0.0 --port 8765 --timeout-keep-alive 300
 ```
 
-The API will be available at `http://localhost:8000`
+The API will be available at `http://localhost:8765`
+
+### Run as a background service (macOS launchd)
+
+The repo ships `com.marcogallegos.translateapi.plist`, which runs `api.py` at login and restarts it if it crashes
+(`RunAtLoad` + `KeepAlive`). Use the makefile:
+
+```bash
+make load      # copy plist to ~/Library/LaunchAgents/ and load it
+make status    # launchd state, PID, exit code and recent logs
+make logs      # last 30 lines of stdout/stderr (logs/stdout.log, logs/stderr.log)
+make reload    # unload + load (after editing api.py or the plist)
+make unload    # stop the service
+make uninstall # unload and remove the plist
+```
+
+Notes:
+
+- The plist hardcodes `/usr/bin/python3` and the absolute project path, so the packages in `requirements.txt` must be importable by that interpreter. Edit `ProgramArguments`/`WorkingDirectory` if you move the project or want to use a venv.
+- `launchd` has a minimal `PATH`; the plist sets it to include `/opt/homebrew/bin` so Whisper can find `ffmpeg`.
+- The service listens on port **8765** on all interfaces (`0.0.0.0`) with CORS open to any origin. Fine on a trusted network; restrict `host`/`allow_origins` in `api.py` otherwise.
+
+### Web UI
+
+The companion React app in `~/code/js/careless_whisper_ui` records audio in the browser and calls
+`POST /transcribe-text-only` on this service. See its README for configuration (`VITE_TRANSCRIPTION_API_URL`, `VITE_WHISPER_MODEL`).
 
 ### API Endpoints
 
 #### 1. Root endpoint - API info
 ```bash
-curl http://localhost:8000/
+curl http://localhost:8765/
 ```
 
 #### 2. Health check
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:8765/health
 ```
 
 #### 3. List available models
 ```bash
-curl http://localhost:8000/models
+curl http://localhost:8765/models
 ```
 
 #### 4. Transcribe audio (full response with segments)
 ```bash
-curl -X POST "http://localhost:8000/transcribe?model=base" \
+curl -X POST "http://localhost:8765/transcribe?model=base" \
      -F "file=@audio.mp3" \
      -H "accept: application/json"
 ```
 
 #### 5. Transcribe audio (text only)
 ```bash
-curl -X POST "http://localhost:8000/transcribe-text-only?model=base" \
+curl -X POST "http://localhost:8765/transcribe-text-only?model=base" \
      -F "file=@audio.mp3" \
      -H "accept: application/json"
 ```
@@ -123,7 +148,7 @@ const transcribeAudio = async (audioFile) => {
     formData.append('file', audioFile);
     
     try {
-        const response = await fetch('http://localhost:8000/transcribe?model=base', {
+        const response = await fetch('http://localhost:8765/transcribe?model=base', {
             method: 'POST',
             body: formData
         });
@@ -160,7 +185,7 @@ fileInput.addEventListener('change', async (e) => {
 import requests
 
 def transcribe_audio(file_path: str, model: str = "base"):
-    url = f"http://localhost:8000/transcribe?model={model}"
+    url = f"http://localhost:8765/transcribe?model={model}"
     
     with open(file_path, 'rb') as f:
         files = {'file': f}

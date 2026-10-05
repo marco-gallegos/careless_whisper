@@ -26,6 +26,12 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
+from sqlmodel import Session
+
+from db import crud
+from db.models import TranscriptCreate
+from db.router import router as transcripts_router
+from db.session import engine
 
 # Configure thread pool for CPU-bound tasks
 # Use more threads if Python 3.14t (free-threaded) is available
@@ -46,10 +52,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(transcripts_router)
+
 # Global model cache
 _model_cache = {}
 
 class TranscriptionResponse(BaseModel):
+    id: Optional[int] = None
     status: str
     transcription: str
     language: str
@@ -120,8 +129,8 @@ async def root():
             "/models": "GET - List available models"
         },
         "usage": {
-            "curl": "curl -X POST -F 'file=@audio.mp3' http://localhost:8000/transcribe",
-            "fetch": "fetch('http://localhost:8000/transcribe', {method: 'POST', body: formData})"
+            "curl": "curl -X POST -F 'file=@audio.mp3' http://localhost:8765/transcribe",
+            "fetch": "fetch('http://localhost:8765/transcribe', {method: 'POST', body: formData})"
         }
     }
 
@@ -178,7 +187,7 @@ async def transcribe(
     
     Example curl usage:
     ```bash
-    curl -X POST "http://localhost:8000/transcribe?model=base" \\
+    curl -X POST "http://localhost:8765/transcribe?model=base" \\
          -F "file=@audio.mp3" \\
          -H "accept: application/json"
     ```
@@ -188,7 +197,7 @@ async def transcribe(
     const formData = new FormData();
     formData.append('file', audioFile);
     
-    const response = await fetch('http://localhost:8000/transcribe?model=base', {
+    const response = await fetch('http://localhost:8765/transcribe?model=base', {
         method: 'POST',
         body: formData
     });
@@ -250,8 +259,25 @@ async def transcribe(
         # Schedule cleanup in background
         background_tasks.add_task(cleanup_temp_file, file_path)
         
+        # Persist transcript (failure to save must not lose the transcription)
+        transcript_id = None
+        try:
+            with Session(engine) as session:
+                saved = crud.create_transcript(session, TranscriptCreate(
+                    filename=file.filename,
+                    text=result["text"].strip(),
+                    language=result.get("language", "unknown"),
+                    model_used=model,
+                    processing_time=round(processing_time, 2),
+                    segments=segments,
+                ))
+                transcript_id = saved.id
+        except Exception as e:
+            print(f"Could not store transcript: {e}")
+
         # Prepare response
         response_data = TranscriptionResponse(
+            id=transcript_id,
             status="success",
             transcription=result["text"].strip(),
             language=result.get("language", "unknown"),
@@ -304,7 +330,7 @@ if __name__ == "__main__":
     uvicorn.run(
         app,
         host="0.0.0.0",
-        port=6666,
+        port=8765,
         timeout_keep_alive=900,  # 15 minutes keep-alive
         timeout_graceful_shutdown=30,
         log_level="info"

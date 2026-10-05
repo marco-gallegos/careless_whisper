@@ -7,7 +7,7 @@ echo ""
 
 # Check if server is running
 echo "1️⃣ Checking if server is running..."
-if curl -s http://localhost:8000/health > /dev/null 2>&1; then
+if curl -s http://localhost:8765/health > /dev/null 2>&1; then
     echo "   ✅ Server is running"
 else
     echo "   ❌ Server is not running!"
@@ -22,7 +22,7 @@ echo "   ⏳ This will take about 30-60 seconds..."
 echo ""
 
 # Run transcription with the existing audio file
-curl -X POST "http://localhost:8000/transcribe?model=tiny" \
+curl -X POST "http://localhost:8765/transcribe?model=tiny" \
      -F "file=@Why_and_When_ReactJS.mp3" \
      -H "accept: application/json" \
      -o test_result.json

@@ -296,7 +296,7 @@
     </div>
     
     <script>
-        const API_URL = 'http://localhost:8000';
+        const API_URL = 'http://localhost:8765';
         
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
@@ -428,7 +428,7 @@
                 }
             })
             .catch(error => {
-                showStatus('error', '❌ Cannot connect to API. Make sure the server is running on http://localhost:8000');
+                showStatus('error', '❌ Cannot connect to API. Make sure the server is running on http://localhost:8765');
             });
     </script>
 </body>
