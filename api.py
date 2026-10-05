@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Optional
 
 import whisper
-from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks
+from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks, Depends
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -29,7 +29,8 @@ import uvicorn
 from sqlmodel import Session
 
 from db import crud
-from db.models import TranscriptCreate
+from db.auth import get_optional_user, router as auth_router
+from db.models import TranscriptCreate, User
 from db.router import router as transcripts_router
 from db.session import engine
 
@@ -52,6 +53,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router)
 app.include_router(transcripts_router)
 
 # Global model cache
@@ -173,7 +175,8 @@ async def list_models():
 async def transcribe(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-    model: str = "base"
+    model: str = "base",
+    user: Optional[User] = Depends(get_optional_user)
 ):
     """
     Transcribe an audio file using OpenAI Whisper.
@@ -259,19 +262,20 @@ async def transcribe(
         # Schedule cleanup in background
         background_tasks.add_task(cleanup_temp_file, file_path)
         
-        # Persist transcript (failure to save must not lose the transcription)
+        # Persist transcript only for logged-in users (failure to save must not lose the transcription)
         transcript_id = None
         try:
-            with Session(engine) as session:
-                saved = crud.create_transcript(session, TranscriptCreate(
-                    filename=file.filename,
-                    text=result["text"].strip(),
-                    language=result.get("language", "unknown"),
-                    model_used=model,
-                    processing_time=round(processing_time, 2),
-                    segments=segments,
-                ))
-                transcript_id = saved.id
+            if user is not None:
+                with Session(engine) as session:
+                    saved = crud.create_transcript(session, TranscriptCreate(
+                        filename=file.filename,
+                        text=result["text"].strip(),
+                        language=result.get("language", "unknown"),
+                        model_used=model,
+                        processing_time=round(processing_time, 2),
+                        segments=segments,
+                    ), user.id)
+                    transcript_id = saved.id
         except Exception as e:
             print(f"Could not store transcript: {e}")
 
@@ -311,13 +315,14 @@ async def transcribe(
 async def transcribe_text_only(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-    model: str = "base"
+    model: str = "base",
+    user: Optional[User] = Depends(get_optional_user)
 ):
     """
     Simplified endpoint that returns only the transcribed text.
     Faster response with minimal data.
     """
-    result = await transcribe(background_tasks, file, model)
+    result = await transcribe(background_tasks, file, model, user)
     return {
         "text": result.transcription,
         "language": result.language,
