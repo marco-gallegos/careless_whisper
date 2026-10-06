@@ -1,3 +1,4 @@
+PYTHON = /usr/bin/python3
 PLIST_NAME = com.marcogallegos.translateapi.plist
 PLIST_SRC = $(CURDIR)/$(PLIST_NAME)
 PLIST_DST = $(HOME)/Library/LaunchAgents/$(PLIST_NAME)
@@ -34,7 +35,7 @@ unload: ## Unload the service
 reload: unload load ## Reload the service (unload + load)
 
 status: ## Show service status
-	@uv run scripts/status.py --label $(SERVICE_LABEL) --stdout-log $(STDOUT_LOG) --stderr-log $(STDERR_LOG)
+	@$(PYTHON) scripts/status.py --label $(SERVICE_LABEL) --stdout-log $(STDOUT_LOG) --stderr-log $(STDERR_LOG)
 
 logs: ## Show recent stdout and stderr logs
 	@echo "┌──────────────────────────────────────────────┐"
@@ -54,7 +55,7 @@ logs-clear: ## Clear log files
 .PHONY: migrate migration
 
 migrate: ## Apply database migrations
-	uv run alembic upgrade head
+	$(PYTHON) -m alembic upgrade head
 
 migration: ## Create a migration: make migration m="message"
-	uv run alembic revision --autogenerate -m "$(m)"
+	$(PYTHON) -m alembic revision --autogenerate -m "$(m)"

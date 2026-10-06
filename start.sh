@@ -12,27 +12,22 @@ if ! command -v ffmpeg &> /dev/null; then
     echo ""
 fi
 
-# Check if virtual environment exists
-if [ ! -d ".venv" ]; then
-    echo "📦 Creating virtual environment..."
-    uv venv
-    echo ""
-fi
+PYTHON=/usr/bin/python3
 
-# Activate virtual environment
-source .venv/bin/activate
-
-# Install dependencies if needed
-if ! python -c "import fastapi" 2>/dev/null; then
+# Install dependencies if needed (user site-packages, no sudo required)
+if ! $PYTHON -c "import fastapi" 2>/dev/null; then
     echo "📦 Installing dependencies..."
-    uv pip install -r requirements.txt
+    $PYTHON -m pip install --user -r requirements.txt
     echo ""
 fi
+
+# Apply database migrations
+$PYTHON -m alembic upgrade head
 
 # Start the server
 echo "✅ Starting server on http://localhost:8765"
 echo "   Press Ctrl+C to stop"
 echo ""
 
-python api.py
+exec $PYTHON api.py
 

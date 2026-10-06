@@ -6,15 +6,13 @@
     <string>com.marcogallegos.translateapi</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/marco.gallegos/.local/bin/uv</string>
-        <string>run</string>
-        <string>python</string>
-        <string>api.py</string>
+        <string>/usr/bin/python3</string>
+        <string>/Users/marco.gallegos/code/python/careless_whisper/api.py</string>
     </array>
     <key>EnvironmentVariables</key>
     <dict>
         <key>PATH</key>
-        <string>/Users/marco.gallegos/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
     </dict>
     <key>RunAtLoad</key>
     <true/>
